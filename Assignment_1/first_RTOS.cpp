@@ -17,4 +17,12 @@
 //     which prevents other tasks from preempting. Specifically, use semaphores with a priority ceiling access protocol.  
 
 //-------------------------------------LIBRARIES----------------------------------------
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <unistd.h>
+#include <math.h>
+#include <sys/types.h>
 
+//--------------------------------------DEFINES-----------------------------------------
