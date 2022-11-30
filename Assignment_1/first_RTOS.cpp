@@ -54,8 +54,8 @@
 // function to waste time
 void waste_time(){
     int i;
-    for(int l=0; l<FIRST_LOOP; l++){
-        for(int k=0; k<SECOND_LOOP; k++){
+    for(int l=0; l<OUTERLOOP; l++){
+        for(int k=0; k<INNERLOOP; k++){
             i = i + 1;           
         }
     }
@@ -146,7 +146,9 @@ void *task4(void *arg)
     }
 }
 
-long int periods[TASKS] = {PERIOD_1, PERIOD_2, PERIOD_3, 0};
+// PERIODIC TASKS CREATION
+long int periods[TASKS];
+
 struct timespec next_activation[TASKS];
 double wcet[TASKS] = {0, 0, 0, 0};
 pthread_attr_t attr[TASKS];
@@ -159,55 +161,36 @@ int missed_deadlines[TASKS] = {0, 0, 0, 0};
 int main()
 {
     // Set the task periods in nanoseconds
-    peridiods[0] = PERIOD_1;
-    peridiods[1] = PERIOD_2;
-    peridiods[2] = PERIOD_3;
+    periods[0] = PERIOD_1;
+    periods[1] = PERIOD_2;
+    periods[2] = PERIOD_3;
 
     // for aperiority task we set the period to 0
-    peridiods[3] = 0;
-
-    // Set the WCET in nanoseconds
-    wcet[0] = 0;
-    wcet[1] = 0;
-    wcet[2] = 0;
-    wcet[3] = 0;
+    periods[3] = 0;
 
     // set the max and min priority
     struct sched_param priomax;
-    priomax.sched_priority = MAX_PRIORITY;
+    priomax.sched_priority = sched_get_priority_max(SCHED_FIFO);
     struct sched_param priomin;
-    priomin.sched_priority = MIN_PRIORITY; 
+    priomin.sched_priority = sched_get_priority_min(SCHED_FIFO); 
 
     if (geteuid() == 0)
-    {
-        // Set the scheduling policy to SCHED_FIFO
-        pthread_attr_setschedpolicy(&task1_attr, SCHED_FIFO);
-        pthread_attr_setschedpolicy(&task2_attr, SCHED_FIFO);
-        pthread_attr_setschedpolicy(&task3_attr, SCHED_FIFO);
-        pthread_attr_setschedpolicy(&task4_attr, SCHED_FIFO);
-
-        // Set the scheduling priority of the threads
-        task1_param.sched_priority = priorities[0];
-        task2_param.sched_priority = priorities[1];
-        task3_param.sched_priority = priorities[2];
-        task4_param.sched_priority = priorities[3];
-
+    {     
         // Set the scheduling parameters of the threads
-        pthread_attr_setschedparam(&task1_attr, &task1_param);
-        pthread_attr_setschedparam(&task2_attr, &task2_param);
-        pthread_attr_setschedparam(&task3_attr, &task3_param);
-        pthread_attr_setschedparam(&task4_attr, &task4_param);
+        pthread_setschedparam(pthread_self(), SCHED_FIFO, &priomax);
+    }
+    else
+    {
+        printf("You must be root to run this program\n");
+        exit(-1);
     }
 
     int i;
     for(i=0; i<TASKS; i++){
         
-        struct timespec next_activation;
-        {
-            clock_gettime(CLOCK_MONOTONIC, &next_activation);
-            next_activation.tv_sec += peridiods[i]/1000000000;
-            next_activation.tv_nsec += peridiods[i]%1000000000;
-        };
+        // initialize the time_1 and time_2 variables required to read the execution time of the tasks
+        struct timespec time_1, time_2;
+        clock_gettime(CLOCK_MONOTONIC, &time_1);
         
         // CREATE THREADS
         if(i==0){
