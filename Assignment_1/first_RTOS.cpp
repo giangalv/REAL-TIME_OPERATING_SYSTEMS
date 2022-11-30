@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <string.h>
+#include <semaphore.h>
 
 //-------------------------------GLOBAL VARIABLES------------------------------------------
 #define PERIOD_1 300000000 // 300ms in nanoseconds
@@ -45,28 +46,32 @@
 #define INNERLOOP 100
 #define OUTERLOOP 2000
 
+#define NTASK1 100
+#define NTASK2 200
+#define NTASK3 300
+#define NTASK4 400
+
 // INIZIALIZATION OF PERIODIC TASKS
 
-void task1_code()
-void task2_code()
-void task3_code()
+int task1_code();
+int task2_code();
+int task3_code();
 
 // INIZIALIZATION OF APERIODIC TASKS
 
-void task4_code()
+int task4_code();
 
 // CARATERISTICS FUNCTIONS OF PERIODIC TRHEADS
 
-void *task1(void *arg)
-void *task2(void *arg)
-void *task3(void *arg)
+void *task1(void *);
+void *task2(void *);
+void *task3(void *);
 
 // CARATERISTICS FUNCTIONS OF APERIODIC TRHEADS
 
-void *task4(void *arg)
+void *task4(void *);
 
 // INIZIALIZATION OF MUTEX
-
 pthread_mutex_t mutex_task4 = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond_task4 = PTHREAD_COND_INITIALIZER;
 
@@ -119,19 +124,22 @@ int main()
     // UNCOMMENT the following lines to using the priority ceiling mutex
     /*
     // set the priority ceiling of the mutex
-    pthread_mutexattr_t mutex_semaphore_attr;
+    pthread_mutex_t mutex_semaphore = PTHREAD_MUTEXATTR_INITIALIZER;
+
+    // set the priority ceiling of the mutex
+    pthread_mutexattr_t mutex_attr_semaphore;
 
     // initialize the mutex attributes
-    pthread_mutexattr_init(&mutex_semaphore_attr);
+    pthread_mutexattr_init(&mutex_attr_semaphore);
 
     // set the priority ceiling protocol
-    pthread_mutexattr_setprotocol(&mutex_semaphore_attr, PTHREAD_PRIO_PROTECT);
+    pthread_mutexattr_setprotocol(&mutex_attr_semaphore, PTHREAD_PRIO_PROTECT);
 
     // set the priority ceiling of the mutex to the max priority
-    pthread_mutexattr_setprioceiling(&mutex_semaphore_attr, priomax.sched_priority + TASKS);
+    pthread_mutexattr_setprioceiling(&mutex_attr_semaphore, priomax.sched_priority + TASKS);
 
     // initialize the mutex
-    pthread_mutex_init(&mutex_task4, &mutex_semaphore_attr);
+    pthread_mutex_init(&mutex_task4, &mutex_attr_semaphore);
     */
 
    // string to be written on the file
@@ -185,8 +193,8 @@ int main()
     // check if the system is schedulable
     if(U > Ulub)
     {
-        printf("The system is not schedulable\n");
-        sprintf("U = %f, Ulub = %f", U, Ulub);
+        printf("The system is not schedulable: ");
+        sprintf(string, "U = %lf, Ulub = %lf", U, Ulub);
         if(write(fd, string, strlen(string)) < 0)
         {
             printf("Error writing on the device file\n");
@@ -196,8 +204,8 @@ int main()
     }
     else
     {
-        printf("The system is schedulable\n");
-        sprintf("U = %f, Ulub = %f", U, Ulub);
+        printf("The system is schedulable: ");
+        sprintf(string, "U = %lf, Ulub = %lf", U, Ulub);
         if(write(fd, string, strlen(string)) < 0)
         {
             printf("Error writing on the device file\n");
@@ -268,13 +276,22 @@ int main()
 
     printf("Start of the execution of the tasks\n");
     fflush(stdout);
-
+    
     // CREATE the THREADS
     for(i=0; i<TASKS; i++){
-
-        // create the threads
-        iret[i] = pthread_create(&thread[i], &attr[i], task_code[i], NULL);
-    }
+        if(i==0){
+            iret[i] = pthread_create(&thread[i], &attr[i], task1, NULL);
+        }
+        else if(i==1){
+            iret[i] = pthread_create(&thread[i], &attr[i], task2, NULL);
+        }
+        else if(i==2){
+            iret[i] = pthread_create(&thread[i], &attr[i], task3, NULL);
+        }
+        else if(i==3){
+            iret[i] = pthread_create(&thread[i], &attr[i], task4, NULL);
+        }
+    }    
 
     // JOIN the THREADS
     for(i=0; i<TASKS; i++){
@@ -295,13 +312,417 @@ int main()
     exit(0);
 }
 
+// FUNCTION to WASTE TIME
+void waste_time(int val){
+    int i, j;
+    double waste;
+    for(i=0; i<OUTERLOOP * val; i++){
+        for(j=0; j<INNERLOOP; j++){
+            waste = rand() * rand() * rand();
+        }
+    }
+}
+
 // TASK 1
 int task1_code()
 {
+    // DECLARE a string to write on the file
+    const char *string_i;
+    const char *string_j;
 
-    
+    // DECLARE a length of the string
+    int length_i, length_j;
+
+    // FILE DESCRIPTOR
+    int fd;
+
+    // OPEN the FILE
+    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    {
+        printf("Error opening the device file\n");
+        exit(-1);
+    }
+
+    // WRITE on the FILE
+    string_i = " 1[ ";
+    length_i = strlen(string_i) + 1;
+    if(write(fd, string_i, length_i) < 0)
+    {
+        printf("Error writing on the device file\n");
+        exit(-1);
+    }
+
+    // CLOSE the FILE
+    close(fd);
+
+    // WASTE TIME
+    waste_time(1);
+
+    // OPEN the FILE
+    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    {
+        printf("Error opening the device file\n");
+        exit(-1);
+    }
+
+    // WRITE on the FILE
+    string_j = " ]1 ";
+    length_j = strlen(string_j) + 1;
+    if(write(fd, string_j, length_j) < 0)
+    {
+        printf("Error writing on the device file\n");
+        exit(-1);
+    }
+
+    // CLOSE the FILE
+    close(fd);
+
+    return 0;
 }
 
+// TEMPORIZZATION TASK 1
+void *task1(void *arg)
+{
+    // SET THREAD AFFINITY to CPU 0
+    cpu_set_t set;
+    CPU_ZERO(&set);
+    CPU_SET(0, &set);
+    pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &set);
 
+    // EXECUTE the TASK 1 a lot of times... it should be an infinite loop (but too dangerous)
+    for(int i=0; i<NTASK1; i++){
 
+        // UNCOMMENT the following lines to lock the mutex
+        /*
+        // TAKE the MUTEX
+        pthread_mutex_lock(&mutex_task4);
+        */
 
+        // EXECUTE the TASK 1
+        if(task1_code()){
+            printf("Error executing the task 1\n");
+            fflush(stdout);
+
+            // UNCOMMENT the following lines to use the mutex
+            /*
+            // RELEASE the MUTEX
+            pthread_mutex_unlock(&mutex_task4);
+            */
+            return NULL;
+        }
+
+        // UNCOMMENT the following lines to use the mutex
+        /*
+        // RELEASE the MUTEX
+        pthread_mutex_unlock(&mutex_task4);
+        */
+
+        // WAIT until the next activation time
+        clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_activation[0], NULL);
+
+        // SET the next activation time
+        long int next_arrival_nanoseconds = next_activation[0].tv_nsec + periods[0];
+        next_activation[0].tv_sec = next_activation[0].tv_sec + next_arrival_nanoseconds / 1000000000;
+        next_activation[0].tv_nsec = next_arrival_nanoseconds % 1000000000;
+    }
+}
+
+// TASK 2
+int task2_code()
+{
+    // DECLARE a string to write on the file
+    const char *string_i;
+    const char *string_j;
+
+    // DECLARE a length of the string
+    int length_i, length_j;
+
+    // FILE DESCRIPTOR
+    int fd;
+
+    // OPEN the FILE
+    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    {
+        printf("Error opening the device file\n");
+        exit(-1);
+    }
+
+    // WRITE on the FILE
+    string_i = " 2[ ";
+    length_i = strlen(string_i) + 1;
+    if(write(fd, string_i, length_i) < 0)
+    {
+        printf("Error writing on the device file\n");
+        exit(-1);
+    }
+
+    // CLOSE the FILE
+    close(fd);
+
+    // WASTE TIME
+    waste_time(2);
+
+    // OPEN the FILE
+    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    {
+        printf("Error opening the device file\n");
+        exit(-1);
+    }
+
+    // WRITE on the FILE
+    string_j = " ]2 ";
+    length_j = strlen(string_j) + 1;
+    if(write(fd, string_j, length_j) < 0)
+    {
+        printf("Error writing on the device file\n");
+        exit(-1);
+    }
+
+    // CLOSE the FILE
+    close(fd);
+
+    return 0;
+}
+
+// TEMPORIZZATION TASK 2
+void *task2(void *arg)
+{
+    // SET THREAD AFFINITY to CPU 0
+    cpu_set_t set;
+    CPU_ZERO(&set);
+    CPU_SET(0, &set);
+    pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &set);
+
+    // EXECUTE the TASK 2 a lot of times... it should be an infinite loop (but too dangerous)
+    for(int i=0; i<NTASK2; i++){
+        
+        // UNCOMMENT the following lines to use the mutex
+        /*
+        // TAKE the MUTEX
+        pthread_mutex_lock(&mutex_task4);
+        */
+
+        // EXECUTE the TASK 2
+        if(task2_code()){
+            printf("Error executing the task 2\n");
+            fflush(stdout);
+
+            // UNCOMMENT the following lines to use the mutex
+            /*
+            // RELEASE the MUTEX
+            pthread_mutex_unlock(&mutex_task4);
+            */                                                              
+            return NULL;
+        }                                                                       
+
+        // UNCOMMENT the following lines to use the mutex
+        /*
+        // RELEASE the MUTEX
+        pthread_mutex_unlock(&mutex_task4);
+        */
+
+        // WAIT until the next activation time
+        clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_activation[1], NULL);
+        long int next_arrival_nanoseconds = next_activation[1].tv_nsec + periods[1];                                                                                                                                            
+        next_activation[1].tv_sec = next_activation[1].tv_sec + next_arrival_nanoseconds / 1000000000;
+        next_activation[1].tv_nsec = next_arrival_nanoseconds % 1000000000;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+    }
+}
+
+// TASK 3
+int task3_code()
+{
+    // DECLARE a string to write on the file
+    const char *string_i;
+    const char *string_j;
+
+    // DECLARE a length of the string
+    int length_i, length_j;
+
+    // FILE DESCRIPTOR
+    int fd;
+
+    // OPEN the FILE
+    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    {
+        printf("Error opening the device file\n");
+        exit(-1);
+    }
+
+    // WRITE on the FILE
+    string_i = " 3[ ";
+    length_i = strlen(string_i) + 1;
+    if(write(fd, string_i, length_i) < 0)
+    {
+        printf("Error writing on the device file\n");
+        exit(-1);
+    }
+
+    // CLOSE the FILE
+    close(fd);
+
+    // WASTE TIME
+    waste_time(4);
+
+    // OPEN the FILE
+    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    {
+        printf("Error opening the device file\n");
+        exit(-1);
+    }
+
+    // WRITE on the FILE
+    string_j = " ]3 ";
+    length_j = strlen(string_j) + 1;
+    if(write(fd, string_j, length_j) < 0)
+    {
+        printf("Error writing on the device file\n");
+        exit(-1);
+    }
+
+    // CLOSE the FILE
+    close(fd);
+
+    return 0;
+}
+
+// TEMPORIZZATION TASK 3
+void *task3(void *arg)
+{
+    // SET THREAD AFFINITY to CPU 0
+    cpu_set_t set;
+    CPU_ZERO(&set);
+    CPU_SET(0, &set);
+    pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &set);
+
+    // EXECUTE the TASK 3 a lot of times... it should be an infinite loop (but too dangerous)
+    for(int i=0; i<NTASK3; i++){
+        
+        // UNCOMMENT the following lines to use the mutex
+        /*
+        // TAKE the MUTEX
+        pthread_mutex_lock(&mutex_task4);
+        */
+
+        // EXECUTE the TASK 3
+        if(task3_code()){
+            printf("Error executing the task 3\n");
+            fflush(stdout);
+
+            // UNCOMMENT the following lines to use the mutex
+            /*
+            // RELEASE the MUTEX
+            pthread_mutex_unlock(&mutex_task4);
+            */                                                              
+            return NULL;
+        }                                                                       
+
+        // UNCOMMENT the following lines to use the mutex
+        /*
+        // RELEASE the MUTEX
+        pthread_mutex_unlock(&mutex_task4);
+        */
+
+        // WAIT until the next activation time
+        clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_activation[2], NULL);
+        long int next_arrival_nanoseconds = next_activation[2].tv_nsec + periods[2];                                                                                                                                            
+        next_activation[2].tv_sec = next_activation[2].tv_sec + next_arrival_nanoseconds / 1000000000;
+        next_activation[2].tv_nsec = next_arrival_nanoseconds % 1000000000;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+    }
+}
+
+// TASK 4
+int task4_code()
+{
+    // DECLARE a string to write on the file
+    const char *string_i;
+    const char *string_j;
+
+    // DECLARE a length of the string
+    int length_i, length_j;
+
+    // FILE DESCRIPTOR
+    int fd;
+
+    // OPEN the FILE
+    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    {
+        printf("Error opening the device file\n");
+        exit(-1);
+    }
+
+    // WRITE on the FILE
+    string_i = " 4[ ";
+    length_i = strlen(string_i) + 1;
+    if(write(fd, string_i, length_i) < 0)
+    {
+        printf("Error writing on the device file\n");
+        exit(-1);
+    }
+
+    // CLOSE the FILE
+    close(fd);
+
+    // WASTE TIME
+    waste_time(1);
+
+    // OPEN the FILE
+    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    {
+        printf("Error opening the device file\n");
+        exit(-1);
+    }
+
+    // WRITE on the FILE
+    string_j = " ]4 ";
+    length_j = strlen(string_j) + 1;
+    if(write(fd, string_j, length_j) < 0)
+    {
+        printf("Error writing on the device file\n");
+        exit(-1);
+    }
+
+    // CLOSE the FILE
+    close(fd);
+
+    return 0;
+}
+
+// TEMPORIZZATION TASK 4
+void *task4(void *arg)
+{
+    // SET THREAD AFFINITY to CPU 0
+    cpu_set_t set;
+    CPU_ZERO(&set);
+    CPU_SET(0, &set);
+    pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &set);
+
+    // INFINITE LOOP
+    while(1){
+        
+        // UNCOMMENT the following lines to use the mutex
+        /*
+        // TAKE the MUTEX
+        pthread_mutex_lock(&mutex_task4);
+        */
+
+        // EXECUTE the TASK 4
+        if(task4_code()){
+            printf("Error executing the task 4\n");
+            fflush(stdout);
+
+            // UNCOMMENT the following lines to use the mutex
+            /*
+            // RELEASE the MUTEX
+            pthread_mutex_unlock(&mutex_task4);
+            */                                                              
+            return NULL;
+        }                                                                       
+
+        // UNCOMMENT the following lines to use the mutex
+        /*
+        // RELEASE the MUTEX
+        pthread_mutex_unlock(&mutex_task4);
+        */                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+    }
+}
