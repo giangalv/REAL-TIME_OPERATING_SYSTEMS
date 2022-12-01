@@ -52,28 +52,33 @@
 #define NTASK3 300
 
 // INIZIALIZATION OF PERIODIC TASKS
-
 int task1_code();
 int task2_code();
 int task3_code();
 
 // INIZIALIZATION OF APERIODIC TASKS
-
 int task4_code();
 
 // CARATERISTICS FUNCTIONS OF PERIODIC TRHEADS
-
 void *task1(void *);
 void *task2(void *);
 void *task3(void *);
 
 // CARATERISTICS FUNCTIONS OF APERIODIC TRHEADS
-
 void *task4(void *);
 
 // INIZIALIZATION OF MUTEX
 pthread_mutex_t mutex_task4 = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond_task4 = PTHREAD_COND_INITIALIZER;
+
+// UNCOMMENT to use the priority ceiling mutex
+/*
+// set the priority ceiling of the mutex
+pthread_mutex_t mutex_semaphore = PTHREAD_MUTEXATTR_INITIALIZER;
+
+// set the priority ceiling of the mutex
+pthread_mutexattr_t mutex_attr_semaphore;
+*/
 
 // PERIODIC TASKS CREATION
 long int periods[TASKS];
@@ -123,12 +128,6 @@ int main()
 
     // UNCOMMENT the following lines to using the priority ceiling mutex
     /*
-    // set the priority ceiling of the mutex
-    pthread_mutex_t mutex_semaphore = PTHREAD_MUTEXATTR_INITIALIZER;
-
-    // set the priority ceiling of the mutex
-    pthread_mutexattr_t mutex_attr_semaphore;
-
     // initialize the mutex attributes
     pthread_mutexattr_init(&mutex_attr_semaphore);
 
@@ -143,7 +142,7 @@ int main()
     */
 
    // string to be written on the file
-    char string[200];
+    char string[100];
 
     // execute the periodic tasks and the aperiodic task in background
     int i;
@@ -177,9 +176,9 @@ int main()
 
         // write the wcet on the file
         sprintf(string, "Worst Case Execution Time of Task %d: %f", i+1, wcet[i]);
-        if(write(fd, string, strlen(string)) < 0)
+        if(write(fd, string, strlen(string)+1) != strlen(string)+1)
         {
-            printf("Error writing on the device file\n");
+            printf("Error writing the file\n");
             exit(-1);
         }
     }
@@ -188,27 +187,27 @@ int main()
     double U = wcet[0]/periods[0] + wcet[1]/periods[1] + wcet[2]/periods[2];
 
     // COMPUTE THE DEADLINE OF THE APERIODIC TASK
-    double Ulub = (pow(2, 1.0/PERIODIC_TASKS) - 1) * PERIODIC_TASKS;
+    double Ulub = (pow(2, (1.0/PERIODIC_TASKS)) - 1) * PERIODIC_TASKS;
 
     // check if the system is schedulable
     if(U > Ulub)
     {
-        printf("The system is not schedulable: ");
+        printf("The system is not schedulable: \n");
         sprintf(string, "U = %lf, Ulub = %lf", U, Ulub);
-        if(write(fd, string, strlen(string)) < 0)
+        if(write(fd, string, strlen(string)+1) != strlen(string)+1)
         {
-            printf("Error writing on the device file\n");
+            printf("Error writing the file\n");
             exit(-1);
         }
-        exit(-1);
+        return -1;
     }
     else
     {
-        printf("The system is schedulable: ");
+        printf("The system is schedulable: \n");
         sprintf(string, "U = %lf, Ulub = %lf", U, Ulub);
-        if(write(fd, string, strlen(string)) < 0)
+        if(write(fd, string, strlen(string)+1) != strlen(string)+1)
         {
-            printf("Error writing on the device file\n");
+            printf("Error writing the file\n");
             exit(-1);
         }
     }
@@ -216,7 +215,7 @@ int main()
     // CLOSE THE FILE
     close(fd);
 
-    sleep(10);
+    sleep(5);
 
     // SET THE PRIORITY OF THE THREADS with the min priority 
     if (geteuid() == 0)
@@ -233,7 +232,7 @@ int main()
         pthread_attr_setschedpolicy(&attr[i], SCHED_FIFO);
 
         // set the priority of the threads
-        param[i].sched_priority = priomax.sched_priority + TASKS - i;
+        param[i].sched_priority = priomin.sched_priority + TASKS - i;
 
         // set the scheduling parameters of the threads
         pthread_attr_setschedparam(&attr[i], &param[i]);
@@ -246,11 +245,10 @@ int main()
         pthread_attr_init(&attr[i]);
 
         // set the scheduling policy
-        pthread_attr_setinheritsched(&attr[i], PTHREAD_EXPLICIT_SCHED);
         pthread_attr_setschedpolicy(&attr[i], SCHED_FIFO);
 
         // set the priority of the threads
-        param[i].sched_priority = priomax.sched_priority + TASKS - i;
+        param[i].sched_priority = 0;
 
         // set the scheduling parameters of the threads
         pthread_attr_setschedparam(&attr[i], &param[i]);
@@ -313,7 +311,7 @@ int main()
 }
 
 // FUNCTION to WASTE TIME
-void waste_time(int val){
+double waste_time(int val){
     int i, j;
     double waste;
     for(i=0; i<OUTERLOOP * val; i++){
@@ -321,6 +319,7 @@ void waste_time(int val){
             waste = rand() * rand();
         }
     }
+    return waste;
 }
 
 // TASK 1
@@ -337,7 +336,7 @@ int task1_code()
     int fd;
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    if((fd = open("/dev/my", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -346,9 +345,9 @@ int task1_code()
     // WRITE on the FILE
     string_i = " 1[ ";
     length_i = strlen(string_i) + 1;
-    if(write(fd, string_i, length_i) < 0)
+    if(write(fd, string_i, length_i) != length_i)
     {
-        printf("Error writing on the device file\n");
+        printf("Error writing the file\n");
         exit(-1);
     }
 
@@ -356,10 +355,10 @@ int task1_code()
     close(fd);
 
     // WASTE TIME
-    waste_time(1);
+    double waste = waste_time(1);
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    if((fd = open("/dev/my", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -368,12 +367,12 @@ int task1_code()
     // WRITE on the FILE
     string_j = " ]1 ";
     length_j = strlen(string_j) + 1;
-    if(write(fd, string_j, length_j) < 0)
+    if(write(fd, string_j, length_j) != length_j)
     {
-        printf("Error writing on the device file\n");
+        printf("Error writing the file\n");
         exit(-1);
     }
-
+    
     // CLOSE the FILE
     close(fd);
 
@@ -441,7 +440,7 @@ int task2_code()
     int fd;
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    if((fd = open("/dev/my", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -450,34 +449,47 @@ int task2_code()
     // WRITE on the FILE
     string_i = " 2[ ";
     length_i = strlen(string_i) + 1;
-    if(write(fd, string_i, length_i) < 0)
+    if(write(fd, string_i, length_i) != length_i)
     {
-        printf("Error writing on the device file\n");
+        printf("Error writing the file\n");
         exit(-1);
     }
-
+    
     // CLOSE the FILE
     close(fd);
 
     // WASTE TIME
-    waste_time(2);
+    double wasted = waste_time(2);
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    if((fd = open("/dev/my", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
     }
 
+    // if wasted (random number) is 0 then the aperiodic task is executed
+    if(wasted == 0){
+        const char *string_4 = ":ex(4)";
+        int length_4 = strlen(string_4) + 1;
+        if(write(fd, string_4, length_4) != length_4)
+        {
+            printf("Error writing the file\n");
+            exit(-1);
+        }
+
+        pthread_cond_signal(&cond_task4);
+    }
+
     // WRITE on the FILE
     string_j = " ]2 ";
     length_j = strlen(string_j) + 1;
-    if(write(fd, string_j, length_j) < 0)
+    if(write(fd, string_j, length_j) != length_j)
     {
-        printf("Error writing on the device file\n");
+        printf("Error writing the file\n");
         exit(-1);
     }
-
+   
     // CLOSE the FILE
     close(fd);
 
@@ -543,7 +555,7 @@ int task3_code()
     int fd;
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    if((fd = open("/dev/my", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -552,20 +564,20 @@ int task3_code()
     // WRITE on the FILE
     string_i = " 3[ ";
     length_i = strlen(string_i) + 1;
-    if(write(fd, string_i, length_i) < 0)
+    if(write(fd, string_i, length_i) != length_i)
     {
-        printf("Error writing on the device file\n");
+        printf("Error writing the file\n");
         exit(-1);
     }
-
+   
     // CLOSE the FILE
     close(fd);
 
     // WASTE TIME
-    waste_time(4);
+    double wasted = waste_time(4);
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    if((fd = open("/dev/my", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -574,12 +586,12 @@ int task3_code()
     // WRITE on the FILE
     string_j = " ]3 ";
     length_j = strlen(string_j) + 1;
-    if(write(fd, string_j, length_j) < 0)
+    if(write(fd, string_j, length_j) != length_j)
     {
-        printf("Error writing on the device file\n");
+        printf("Error writing the file\n");
         exit(-1);
     }
-
+    
     // CLOSE the FILE
     close(fd);
 
@@ -645,7 +657,7 @@ int task4_code()
     int fd;
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    if((fd = open("/dev/my", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -654,11 +666,12 @@ int task4_code()
     // WRITE on the FILE
     string_i = " 4[ ";
     length_i = strlen(string_i) + 1;
-    if(write(fd, string_i, length_i) < 0)
+    if(write(fd, string_i, length_i) != length_i)
     {
-        printf("Error writing on the device file\n");
+        printf("Error writing the file\n");
         exit(-1);
     }
+
 
     // CLOSE the FILE
     close(fd);
@@ -667,7 +680,7 @@ int task4_code()
     waste_time(1);
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_WRONLY)) < 0)
+    if((fd = open("/dev/my", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -676,12 +689,12 @@ int task4_code()
     // WRITE on the FILE
     string_j = " ]4 ";
     length_j = strlen(string_j) + 1;
-    if(write(fd, string_j, length_j) < 0)
+    if(write(fd, string_j, length_j) != length_j)
     {
-        printf("Error writing on the device file\n");
+        printf("Error writing the file\n");
         exit(-1);
     }
-
+   
     // CLOSE the FILE
     close(fd);
 
@@ -705,6 +718,8 @@ void *task4(void *ptr)
         // TAKE the MUTEX
         pthread_mutex_lock(&mutex_task4);
         */
+
+       pthread_cond_wait(&cond_task4, &mutex_task4);
 
         // EXECUTE the TASK 4
         if(task4_code()){
