@@ -14,9 +14,9 @@ After that, from inside the 'Assignment_1' folder, you need to compile the kerne
 $ make
 '''
 
-Install the "my_module" with:
+Install the "mydevice" with:
 '''console
-$ insmod my_module.ko
+$ insmod my.ko
 '''
 
 Check if the installation was done correctly:
