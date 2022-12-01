@@ -43,13 +43,13 @@
 #define APERIODIC_TASKS 1
 #define TASKS PERIODIC_TASKS + APERIODIC_TASKS
 
-#define INNERLOOP 100
-#define OUTERLOOP 2000
+#define INNERLOOP 50
+#define OUTERLOOP 100
 
+// choose the numbers of ciclic for each task
 #define NTASK1 100
 #define NTASK2 200
 #define NTASK3 300
-#define NTASK4 400
 
 // INIZIALIZATION OF PERIODIC TASKS
 
@@ -318,7 +318,7 @@ void waste_time(int val){
     double waste;
     for(i=0; i<OUTERLOOP * val; i++){
         for(j=0; j<INNERLOOP; j++){
-            waste = rand() * rand() * rand();
+            waste = rand() * rand();
         }
     }
 }
@@ -381,7 +381,7 @@ int task1_code()
 }
 
 // TEMPORIZZATION TASK 1
-void *task1(void *arg)
+void *task1(void *ptr)
 {
     // SET THREAD AFFINITY to CPU 0
     cpu_set_t set;
@@ -485,7 +485,7 @@ int task2_code()
 }
 
 // TEMPORIZZATION TASK 2
-void *task2(void *arg)
+void *task2(void *ptr)
 {
     // SET THREAD AFFINITY to CPU 0
     cpu_set_t set;
@@ -587,7 +587,7 @@ int task3_code()
 }
 
 // TEMPORIZZATION TASK 3
-void *task3(void *arg)
+void *task3(void *ptr)
 {
     // SET THREAD AFFINITY to CPU 0
     cpu_set_t set;
@@ -689,7 +689,7 @@ int task4_code()
 }
 
 // TEMPORIZZATION TASK 4
-void *task4(void *arg)
+void *task4(void *ptr)
 {
     // SET THREAD AFFINITY to CPU 0
     cpu_set_t set;

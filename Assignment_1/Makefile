@@ -2,7 +2,7 @@
 # kernel build system and can use its language.
 
 ifneq ($(KERNELRELEASE),)
-	obj-m := my_module.o
+	obj-m := mydevice.o
 
 # Otherwise we were called directly from the command
 # line; invoke the kernel build system.

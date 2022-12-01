@@ -1,20 +1,25 @@
+/*
+mydevice.c -- a simple character device driver
+*/
+
 #include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
+#include <linux/init.h> 
 #include <linux/moduleparam.h>
-#include <linux/slab.h>
-#include <linux/fs.h>
-#include <linux/errno.h>
-#include <linux/types.h>
-#include <linux/fcntl.h>
-#include <asm/uaccess.h>
-#include <linux/cdev.h>
-#include <linux/semaphore.h>
-#include <linux/proc_fs.h>
-#include <linux/seq_file.h>
-#include <linux/fcntl.h>
-#include <linux/unistd.h>
-#include <linux/sched.h>
+#include <linux/kernel.h> // printk()
+#include <linux/slab.h> // kmalloc()
+#include <linux/fs.h> // file_operations
+#include <linux/errno.h> // error codes
+#include <linux/types.h> // size_t
+#include <linux/proc_fs.h> // proc file system
+#include <linux/fcntl.h> // O_ACCMODE
+#include <asm/uaccess.h> // copy_*_user
+// #include <asm/system.h> // cli(), *_flags
+#include <linux/cdev.h> // cdev utilities
+#include <linux/semaphore.h> // semaphores
+#include <linux/seq_file.h> // sequence file
+#include <linux/sched/signal.h> // for_each_process
+
+
 
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_AUTHOR("Gianluca Galvagni");
