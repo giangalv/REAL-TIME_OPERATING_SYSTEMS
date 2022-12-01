@@ -13,6 +13,8 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/fcntl.h>
+#include <linux/unistd.h>
+#include <linux/sched.h>
 
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_AUTHOR("Gianluca Galvagni");
@@ -31,10 +33,10 @@ struct my_dev {
     char *data;
     struct semaphore sem;
     struct cdev cdev;
-    int mem_size;
+    int my_mem_size;
 };
 
-struct my_dev *my_devices;
+struct my_dev my_device;
 
 // ---------------------------file operations---------------------------
 
@@ -43,7 +45,10 @@ static int my_open(struct inode *inode, struct file *filp)
 {
     struct my_dev *dev;
 
+    // Get the device structure
     dev = container_of(inode->i_cdev, struct my_dev, cdev);
+
+    // Save the device structure
     filp->private_data = dev;
 
     return 0;
@@ -66,8 +71,8 @@ static ssize_t my_write(struct file *filp, const char __user *buf, size_t count,
     if (down_interruptible(&dev->sem))
         return -ERESTARTSYS;
 
-    if (count > dev->mem_size)
-        count = dev->mem_size;
+    if (count > dev->my_mem_size)
+        count = dev->my_mem_size;
 
     // Copy data from user space
     if (copy_from_user(dev->data, buf, count)) {
@@ -76,13 +81,12 @@ static ssize_t my_write(struct file *filp, const char __user *buf, size_t count,
     }
 
     // print data
-    fprintk(KERN_INFO, "My_write: %s", dev->data);
+    printk(KERN_INFO, "My_write: %s", dev->data);
 
     // Update file position
-    *f_pos += count;
     retval = count;
 
-// Exit
+// Exit point for the function (release semaphore)
 out:
     up(&dev->sem);
     return retval;
@@ -90,25 +94,22 @@ out:
 
 struct file_operations my_fops = {
     .owner = THIS_MODULE,
+    .write = my_write,
     .open = my_open,
     .release = my_release,
-    .write = my_write,
 };
 
 // ---------------------------proc file operations---------------------------
 void my_cleanup_module(void)
 {
-    int i;
+    // Remove proc file entry from /proc
     dev_t devno = MKDEV(my_major, my_minor);
 
-    // Remove proc file
-    if (my_devices) {
-        for (i = 0; i < 1; i++) {
-            cdev_del(&my_devices[i].cdev);
-            kfree(my_devices[i].data);
-        }
-        kfree(my_devices);
-    }
+    // Remove device from system 
+    cdev_del(&my_device.cdev);
+
+    // Free memory
+    kfree(my_device.data);
 
     // Unregister device
     unregister_chrdev_region(devno, 1);
@@ -124,38 +125,38 @@ int my_init_module(void)
     if (my_major) {
         // Static allocation
         dev = MKDEV(my_major, my_minor);
-        result = register_chrdev_region(dev, 1, "my_module");
+        result = register_chrdev_region(dev, 1, "my");
     } else {
         // Dynamic allocation
-        result = alloc_chrdev_region(&dev, my_minor, 1, "my_module");
+        result = alloc_chrdev_region(&dev, my_minor, 1, "my");
         my_major = MAJOR(dev);
     }
 
     // Check if allocation was successful
     if (result < 0) {
-        printk(KERN_WARNING "my_module: can't get major than %d" my_major);
+        printk(KERN_WARNING "my: can't get major than %d" my_major);
         return result;
     }
 
     // Allocate memory for the devices
-    my_devices->mem_size = my_mem_size;
+    my_device.my_mem_size = my_mem_size;
 
     // Initialize the device
-    my_devices->data = kmalloc(my_mem_size*sizeof(char), GFP_KERNEL);
-    memset(my_devices->data, 0, my_mem_size*sizeof(char));
+    my_device.data = kmalloc(my_mem_size*sizeof(char), GFP_KERNEL);
+    memset(my_device.data, 0, my_mem_size*sizeof(char));
 
     // Initialize semaphore
-    sema_init(&my_devices->sem, 1);
+    sema_init(&my_device.sem, 1);
 
     // Initialize cdev
-    cdev_init(&my_devices->cdev, &my_fops);
-    my_devices->cdev.owner = THIS_MODULE;
+    cdev_init(&my_device.cdev, &my_fops);
+    my_device.cdev.owner = THIS_MODULE;
 
     // Add device
-    my_devices->cdev.ops = &my_fops;
+    my_device.cdev.ops = &my_fops;
 
     // Add device to the system
-    error = cdev_add(&my_devices->cdev, dev, 1);
+    error = cdev_add(&my_device.cdev, dev, 1);
 
     // Check if adding was successful
     if (error)

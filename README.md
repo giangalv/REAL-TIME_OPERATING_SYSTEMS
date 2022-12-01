@@ -16,7 +16,7 @@ $ make
 
 Install the "my_module" with:
 '''console
-$ insmod my_moduke.ko
+$ insmod my_module.ko
 '''
 
 Check if the installation was done correctly:
