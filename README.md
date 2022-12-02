@@ -25,14 +25,14 @@ $ /sbin/lsmod
 '''
 In the list you should find a module called 'mydevice'.
 
-Now, read the major number associated to the driver (the number after to 'mydevice') by typing:
+Now, read the major number associated to the driver (the number after to 'my') by typing:
 '''console
 $ cat /proc/devices
 '''
 
 Create the special file typing:
 '''console
-$ mknod "/Assignment_1/mydevice" c <majornumber> 0
+$ mknod /dev/my c <majornumber> 0
 '''
 
 Finaly, compile the scheduler by typing:

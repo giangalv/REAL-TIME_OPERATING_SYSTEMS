@@ -13,12 +13,11 @@ mydevice.c -- a simple character device driver
 #include <linux/proc_fs.h> // proc file system
 #include <linux/fcntl.h> // O_ACCMODE
 #include <asm/uaccess.h> // copy_*_user
-// #include <asm/system.h> // cli(), *_flags
 #include <linux/cdev.h> // cdev utilities
 #include <linux/semaphore.h> // semaphores
 #include <linux/seq_file.h> // sequence file
 #include <linux/sched/signal.h> // for_each_process
-
+// #include <asm/system.h> // cli(), *_flags
 
 
 MODULE_LICENSE("Dual BSD/GPL");

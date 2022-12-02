@@ -20,7 +20,9 @@
 //     Every thread now protects all its operations (i) to (v) with a semaphore,which prevents other tasks from preempting. 
 //     Specifically, use semaphores with a priority ceiling access protocol.  
 
-// COMPILE WITH: g++ -lpthread <file_name>.cpp -o <file_name>
+
+// COMPILE WITH: g++ -lpthread <file_name> -o <executable_file_name>
+
 
 //-------------------------------------LIBRARIES----------------------------------------
 #include <pthread.h>
@@ -33,6 +35,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <semaphore.h>
+#include <sched.h>
 
 //-------------------------------GLOBAL VARIABLES------------------------------------------
 #define PERIOD_1 300000000 // 300ms in nanoseconds
@@ -120,9 +123,9 @@ int main()
 
     // open the special file associated with the driver
     int fd;
-    if((fd = open("/Assignment_1/dev", O_RDWR)) < 0)
+    if((fd = open("/dev/my", O_RDWR)) < 0)
     {
-        printf("Error opening the device file\n");
+        printf("Error opening the device file (main)\n");
         exit(-1);
     }
 
@@ -178,7 +181,7 @@ int main()
         sprintf(string, "Worst Case Execution Time of Task %d: %f", i+1, wcet[i]);
         if(write(fd, string, strlen(string)+1) != strlen(string)+1)
         {
-            printf("Error writing the file\n");
+            printf("Error writing the file(main)\n");
             exit(-1);
         }
     }
@@ -336,9 +339,9 @@ int task1_code()
     int fd;
 
     // OPEN the FILE
-    if((fd = open("/", O_RDWR)) < 0)
+    if((fd = open("/dev/mydevice", O_RDWR)) < 0)
     {
-        printf("Error opening the device file\n");
+        printf("Error opening the device file(task1)\n");
         exit(-1);
     }
 
@@ -358,7 +361,7 @@ int task1_code()
     double waste = waste_time(1);
 
     // OPEN the FILE
-    if((fd = open("/Assignment_1/dev", O_RDWR)) < 0)
+    if((fd = open("/dev/mydevice", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -421,9 +424,10 @@ void *task1(void *ptr)
 
         // SET the next activation time
         long int next_arrival_nanoseconds = next_activation[0].tv_nsec + periods[0];
-        next_activation[0].tv_sec = next_activation[0].tv_sec + next_arrival_nanoseconds / 1000000000;
         next_activation[0].tv_nsec = next_arrival_nanoseconds % 1000000000;
+        next_activation[0].tv_sec = next_activation[0].tv_sec + next_arrival_nanoseconds / 1000000000;
     }
+    return NULL;
 }
 
 // TASK 2
@@ -440,9 +444,9 @@ int task2_code()
     int fd;
 
     // OPEN the FILE
-    if((fd = open("/Assignment_1/dev", O_RDWR)) < 0)
+    if((fd = open("/dev/mydevice", O_RDWR)) < 0)
     {
-        printf("Error opening the device file\n");
+        printf("Error opening the device file(task2)\n");
         exit(-1);
     }
 
@@ -462,7 +466,7 @@ int task2_code()
     double wasted = waste_time(2);
 
     // OPEN the FILE
-    if((fd = open("/Assignment_1/dev", O_RDWR)) < 0)
+    if((fd = open("/dev/mydevice", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -535,10 +539,11 @@ void *task2(void *ptr)
 
         // WAIT until the next activation time
         clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_activation[1], NULL);
-        long int next_arrival_nanoseconds = next_activation[1].tv_nsec + periods[1];                                                                                                                                            
-        next_activation[1].tv_sec = next_activation[1].tv_sec + next_arrival_nanoseconds / 1000000000;
-        next_activation[1].tv_nsec = next_arrival_nanoseconds % 1000000000;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+        long int next_arrival_nanoseconds = next_activation[1].tv_nsec + periods[1];
+        next_activation[1].tv_nsec = next_arrival_nanoseconds % 1000000000;                                                                                                                                           
+        next_activation[1].tv_sec = next_activation[1].tv_sec + next_arrival_nanoseconds / 1000000000;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
     }
+    return NULL;
 }
 
 // TASK 3
@@ -555,9 +560,9 @@ int task3_code()
     int fd;
 
     // OPEN the FILE
-    if((fd = open("/Assignment_1/dev", O_RDWR)) < 0)
+    if((fd = open("/dev/mydevice", O_RDWR)) < 0)
     {
-        printf("Error opening the device file\n");
+        printf("Error opening the device file(task3)\n");
         exit(-1);
     }
 
@@ -577,7 +582,7 @@ int task3_code()
     double wasted = waste_time(4);
 
     // OPEN the FILE
-    if((fd = open("/Assignment_1/dev", O_RDWR)) < 0)
+    if((fd = open("/dev/mydevice", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -638,9 +643,10 @@ void *task3(void *ptr)
         // WAIT until the next activation time
         clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_activation[2], NULL);
         long int next_arrival_nanoseconds = next_activation[2].tv_nsec + periods[2];                                                                                                                                            
-        next_activation[2].tv_sec = next_activation[2].tv_sec + next_arrival_nanoseconds / 1000000000;
-        next_activation[2].tv_nsec = next_arrival_nanoseconds % 1000000000;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+        next_activation[2].tv_nsec = next_arrival_nanoseconds % 1000000000;       
+        next_activation[2].tv_sec = next_activation[2].tv_sec + next_arrival_nanoseconds / 1000000000;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
     }
+    return NULL;
 }
 
 // TASK 4
@@ -657,9 +663,9 @@ int task4_code()
     int fd;
 
     // OPEN the FILE
-    if((fd = open("/Assignment_1/dev", O_RDWR)) < 0)
+    if((fd = open("/dev/mydevice", O_RDWR)) < 0)
     {
-        printf("Error opening the device file\n");
+        printf("Error opening the device file(task4)\n");
         exit(-1);
     }
 
@@ -680,7 +686,7 @@ int task4_code()
     waste_time(1);
 
     // OPEN the FILE
-    if((fd = open("/Assignment_1/dev", O_RDWR)) < 0)
+    if((fd = open("/dev/mydevice", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
