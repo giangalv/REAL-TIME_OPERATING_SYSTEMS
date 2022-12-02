@@ -131,10 +131,10 @@ int my_init_module(void)
     if (my_major) {
         // Static allocation
         dev = MKDEV(my_major, my_minor);
-        result = register_chrdev_region(dev, 1, "my");
+        result = register_chrdev_region(dev, 1, "mydevice");
     } else {
         // Dynamic allocation
-        result = alloc_chrdev_region(&dev, my_minor, 1, "my");
+        result = alloc_chrdev_region(&dev, my_minor, 1, "mydevice");
         my_major = MAJOR(dev);
     }
 
@@ -166,9 +166,9 @@ int my_init_module(void)
 
     // Check if adding was successful
     if (error)
-        printk(KERN_NOTICE "Error %d adding my_module", error);
+        printk(KERN_NOTICE "Error %d adding my_device", error);
     else
-        printk(KERN_INFO "my_module: module loaded with major number %d and minor number %d", my_major, my_minor);
+        printk(KERN_INFO "my_device: module loaded with major number %d and minor number %d", my_major, my_minor);
 
     return 0;
 }
