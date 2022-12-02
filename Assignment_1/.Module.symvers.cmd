@@ -1,0 +1,1 @@
+cmd_/home/galvg/Documents/GitHub/RTOS/Assignment_1/Module.symvers := sed 's/\.ko$$/\.o/' /home/galvg/Documents/GitHub/RTOS/Assignment_1/modules.order | scripts/mod/modpost -m -a  -o /home/galvg/Documents/GitHub/RTOS/Assignment_1/Module.symvers -e -i Module.symvers   -T -

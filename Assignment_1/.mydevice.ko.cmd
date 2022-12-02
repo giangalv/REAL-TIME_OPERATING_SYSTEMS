@@ -1,0 +1,1 @@
+cmd_/home/galvg/Documents/GitHub/RTOS/Assignment_1/mydevice.ko := ld -r -m elf_x86_64 -z noexecstack --build-id=sha1  -T scripts/module.lds -o /home/galvg/Documents/GitHub/RTOS/Assignment_1/mydevice.ko /home/galvg/Documents/GitHub/RTOS/Assignment_1/mydevice.o /home/galvg/Documents/GitHub/RTOS/Assignment_1/mydevice.mod.o;  true

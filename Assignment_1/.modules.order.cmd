@@ -1,0 +1,1 @@
+cmd_/home/galvg/Documents/GitHub/RTOS/Assignment_1/modules.order := {   echo /home/galvg/Documents/GitHub/RTOS/Assignment_1/mydevice.ko; :; } | awk '!x[$$0]++' - > /home/galvg/Documents/GitHub/RTOS/Assignment_1/modules.order

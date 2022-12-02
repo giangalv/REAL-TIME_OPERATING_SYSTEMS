@@ -1,0 +1,1 @@
+cmd_/home/galvg/Documents/GitHub/RTOS/Assignment_1/mydevice.mod := { echo  /home/galvg/Documents/GitHub/RTOS/Assignment_1/mydevice.o;  echo; } > /home/galvg/Documents/GitHub/RTOS/Assignment_1/mydevice.mod

@@ -120,7 +120,7 @@ int main()
 
     // open the special file associated with the driver
     int fd;
-    if((fd = open("/dev/my", O_RDWR)) < 0)
+    if((fd = open("/RTOS/Assignment_1", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -336,7 +336,7 @@ int task1_code()
     int fd;
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_RDWR)) < 0)
+    if((fd = open("/RTOS/Assignment_1", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -358,7 +358,7 @@ int task1_code()
     double waste = waste_time(1);
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_RDWR)) < 0)
+    if((fd = open("/RTOS/Assignment_1", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -440,7 +440,7 @@ int task2_code()
     int fd;
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_RDWR)) < 0)
+    if((fd = open("/RTOS/Assignment_1", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -462,7 +462,7 @@ int task2_code()
     double wasted = waste_time(2);
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_RDWR)) < 0)
+    if((fd = open("/RTOS/Assignment_1", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -555,7 +555,7 @@ int task3_code()
     int fd;
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_RDWR)) < 0)
+    if((fd = open("/RTOS/Assignment_1", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -577,7 +577,7 @@ int task3_code()
     double wasted = waste_time(4);
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_RDWR)) < 0)
+    if((fd = open("/RTOS/Assignment_1", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -657,7 +657,7 @@ int task4_code()
     int fd;
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_RDWR)) < 0)
+    if((fd = open("/RTOS/Assignment_1", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
@@ -680,7 +680,7 @@ int task4_code()
     waste_time(1);
 
     // OPEN the FILE
-    if((fd = open("/dev/my", O_RDWR)) < 0)
+    if((fd = open("/RTOS/Assignment_1", O_RDWR)) < 0)
     {
         printf("Error opening the device file\n");
         exit(-1);
