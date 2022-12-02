@@ -35,10 +35,10 @@ module_param(my_major, int, S_IRUGO);
 module_param(my_mem_size, int, S_IRUGO);
 
 struct my_dev {
-    char *data;
-    struct semaphore sem;
-    struct cdev cdev;
-    int my_mem_size;
+    char *data; // the data
+    struct semaphore sem; // mutual exclusion semaphore
+    struct cdev cdev; // Char device structure
+    int my_mem_size; // size of the buffer
 };
 
 struct my_dev my_device;
@@ -48,7 +48,7 @@ struct my_dev my_device;
 // Open
 static int my_open(struct inode *inode, struct file *filp)
 {
-    struct my_dev *dev;
+    struct my_dev *dev; // device information
 
     // Get the device structure
     dev = container_of(inode->i_cdev, struct my_dev, cdev);
@@ -66,7 +66,8 @@ static int my_release(struct inode *inode, struct file *filp)
 }
 
 // Write to device
-static ssize_t my_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
+static ssize_t my_write(struct file *filp, const char __user *buf, 
+                        size_t count, loff_t *f_pos)
 {
     // Get device
     struct my_dev *dev = filp->private_data;
@@ -139,7 +140,7 @@ int my_init_module(void)
 
     // Check if allocation was successful
     if (result < 0) {
-        printk(KERN_WARNING "my: can't get major than %d" my_major);
+        printk(KERN_WARNING "my: can't get major than %d", my_major);
         return result;
     }
 
