@@ -53,6 +53,7 @@
 #define NTASK1 100
 #define NTASK2 200
 #define NTASK3 300
+#define NTASK4 400
 
 // INIZIALIZATION OF PERIODIC TASKS
 int task1_code();
@@ -123,7 +124,7 @@ int main()
 
     // open the special file associated with the driver
     int fd;
-    if((fd = open("/dev/my", O_RDWR)) < 0)
+    if((fd = open("/dev/mydevice", O_RDWR)) < 0)
     {
         printf("Error opening the device file (main)\n");
         exit(-1);
@@ -197,6 +198,7 @@ int main()
     {
         printf("The system is not schedulable: \n");
         sprintf(string, "U = %lf, Ulub = %lf", U, Ulub);
+
         if(write(fd, string, strlen(string)+1) != strlen(string)+1)
         {
             printf("Error writing the file\n");
@@ -207,7 +209,9 @@ int main()
     else
     {
         printf("The system is schedulable: \n");
+        printf("U = %lf, Ulub = %lf\n", U, Ulub);
         sprintf(string, "U = %lf, Ulub = %lf", U, Ulub);
+        
         if(write(fd, string, strlen(string)+1) != strlen(string)+1)
         {
             printf("Error writing the file\n");
@@ -279,26 +283,21 @@ int main()
     fflush(stdout);
     
     // CREATE the THREADS
-    for(i=0; i<TASKS; i++){
-        if(i==0){
-            iret[i] = pthread_create(&thread[i], &attr[i], task1, NULL);
-        }
-        else if(i==1){
-            iret[i] = pthread_create(&thread[i], &attr[i], task2, NULL);
-        }
-        else if(i==2){
-            iret[i] = pthread_create(&thread[i], &attr[i], task3, NULL);
-        }
-        else if(i==3){
-            iret[i] = pthread_create(&thread[i], &attr[i], task4, NULL);
-        }
-    }    
-
+    iret[0] = pthread_create(&thread[0], &attr[0], task1, NULL);
+    printf("Thread 1 created\n");
+    iret[1] = pthread_create(&thread[1], &attr[1], task2, NULL);
+    printf("Thread 2 created\n");
+    iret[2] = pthread_create(&thread[2], &attr[2], task3, NULL);
+    printf("Thread 3 created\n");
+    iret[3] = pthread_create(&thread[3], &attr[3], task4, NULL);
+    printf("Thread 4 created\n");
+              
     // JOIN the THREADS
     for(i=0; i<TASKS; i++){
 
         // join the threads
         pthread_join(thread[i], NULL);
+        printf("Thread %d joined\n", i+1);
     }
 
     printf("End of the execution of the tasks\n");
@@ -745,5 +744,5 @@ void *task4(void *ptr)
         // RELEASE the MUTEX
         pthread_mutex_unlock(&mutex_task4);
         */                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
-    }
+    }   
 }

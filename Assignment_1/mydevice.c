@@ -5,6 +5,8 @@ mydevice.c -- a simple character device driver
 #include <linux/module.h>
 #include <linux/init.h> 
 #include <linux/moduleparam.h>
+#include <linux/kernel.h>
+
 #include <linux/kernel.h> // printk()
 #include <linux/slab.h> // kmalloc()
 #include <linux/fs.h> // file_operations
@@ -85,7 +87,7 @@ static ssize_t my_write(struct file *filp, const char __user *buf,
         goto out;
     }
 
-    // print data
+    // print data to kernel log
     printk(KERN_INFO, "My_write: %s", dev->data);
 
     // Update file position

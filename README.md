@@ -19,20 +19,20 @@ Install the "mydevice" with:
 $ insmod mydevice.ko
 '''
 
-Check if the installation was done correctly:
+Check if the installation was done correctly (if there is 'mydevice' in the list):
 '''console
 $ /sbin/lsmod
 '''
 In the list you should find a module called 'mydevice'.
 
-Now, read the major number associated to the driver (the number after to 'my') by typing:
+Now, read the major number associated to the driver (the number after to 'mydevice') by typing:
 '''console
 $ cat /proc/devices
 '''
 
 Create the special file typing:
 '''console
-$ mknod /dev/my c <majornumber> 0
+$ mknod /dev/mydevice c <majornumber> 0
 '''
 
 Finaly, compile the scheduler by typing:
