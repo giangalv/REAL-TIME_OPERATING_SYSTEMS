@@ -20,9 +20,7 @@
 //     Every thread now protects all its operations (i) to (v) with a semaphore,which prevents other tasks from preempting. 
 //     Specifically, use semaphores with a priority ceiling access protocol.  
 
-
-// COMPILE WITH: g++ -lpthread <file_name> -o <executable_file_name>
-
+// COMPILE WITH: g++ -lpthread first_RTOS.c -o first_RTOS
 
 //-------------------------------------LIBRARIES----------------------------------------
 #include <pthread.h>
@@ -38,7 +36,7 @@
 #include <sched.h>
 
 //-------------------------------GLOBAL VARIABLES------------------------------------------
-#define PERIOD_1 300000000 // 300ms in nanoseconds
+#define PERIOD_1 300000000  // 300ms in nanoseconds
 #define PERIOD_2 500000000  // 500ms in nanoseconds
 #define PERIOD_3 800000000  // 800ms in nanoseconds
 
@@ -46,8 +44,8 @@
 #define APERIODIC_TASKS 1
 #define TASKS PERIODIC_TASKS + APERIODIC_TASKS
 
-#define INNERLOOP 50
-#define OUTERLOOP 100
+#define INNERLOOP 1000
+#define OUTERLOOP 2000
 
 // choose the numbers of ciclic for each task
 #define NTASK1 100
@@ -293,7 +291,7 @@ int main()
     printf("Thread 4 created\n");
               
     // JOIN the THREADS
-    for(i=0; i<TASKS; i++){
+    for(i=0; i<PERIODIC_TASKS; i++){
 
         // join the threads
         pthread_join(thread[i], NULL);
