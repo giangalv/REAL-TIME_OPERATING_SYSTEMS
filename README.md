@@ -19,7 +19,7 @@ Install the "mydevice" with:
 $ insmod mydevice.ko
 '''
 
-Check if the installation was done correctly (if there is 'mydevice' in the list):
+Check if the installation was done correctly (if there is 'mydevice' in the list) with:
 '''console
 $ /sbin/lsmod
 '''
