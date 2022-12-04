@@ -14,7 +14,7 @@ After that, from inside the 'Assignment_1' folder, you need to compile the kerne
 $ make
 '''
 
-Install the "mydevice" with:
+To install the "mydevice" with:
 '''console
 $ insmod mydevice.ko
 '''
@@ -49,3 +49,4 @@ And to read the kernel log, use that:
 '''console
 $ dmesg
 '''
+Here you can find 'mydevice' in the list.
